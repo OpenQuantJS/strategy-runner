@@ -1,6 +1,8 @@
 import { StrategyRunner, Strategy, ProcessedArgs } from './StrategyWritable'
 import { Readable } from 'stream';
 
+import { DevNull } from './DevNull'
+
 export type ProcessedFunc = (r: ProcessedArgs) => any
 
 export async function run<T = any>(strategy: Strategy, readable: Readable, size: number, processedFunc?: ProcessedFunc) {
@@ -9,6 +11,8 @@ export async function run<T = any>(strategy: Strategy, readable: Readable, size:
     strategy,
     size,
   })
+
+  const devNull = new DevNull({ objectMode: true })
 
   strategyRunner.on('processed', (r: ProcessedArgs) => {
     if (r.isValid) {
@@ -25,7 +29,7 @@ export async function run<T = any>(strategy: Strategy, readable: Readable, size:
     })
   })
 
-  readable.pipe(strategyRunner)
+  readable.pipe(strategyRunner).pipe(devNull)
 
   return await r
 }
